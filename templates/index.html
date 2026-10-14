@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Security Alert Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark">☁</div>
+    <div class="brand-copy">
+      <h1>Cloud Security Monitor</h1>
+      <p>Cloud-Based Security Alert System Using AWS IoT</p>
+    </div>
+    <div class="top-actions">
+      <span class="live-dot"></span><span id="connection-label">Connecting to backend…</span>
+      <button class="button button-quiet" id="refresh-button">↻ Refresh</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow">PROJECT OVERVIEW</p>
+        <h2>A clear view of your cloud security status.</h2>
+        <p class="muted">The result below comes from your configured AWS Lambda security check. This dashboard does not claim to perform a full AWS security audit.</p>
+      </div>
+      <button class="button button-primary" id="check-button">▶ Run Security Check</button>
+    </section>
+
+    <div id="banner" class="banner hidden" role="status"></div>
+
+    <section class="summary-grid">
+      <article class="card status-card">
+        <div class="card-heading"><span>OVERALL SECURITY STATUS</span><span class="icon-chip">✓</span></div>
+        <div id="overall-status" class="big-status neutral">NOT CHECKED</div>
+        <p id="overall-message" class="muted">Run a security check to fetch a real result from AWS Lambda.</p>
+        <div class="divider"></div>
+        <div class="meta-line"><span>Last check</span><strong id="last-check">Not checked</strong></div>
+      </article>
+      <article class="card">
+        <div class="card-heading"><span>S3 BUCKET</span><span class="icon-chip">▤</span></div>
+        <h3 id="bucket-name">Not configured</h3>
+        <p class="muted">Bucket reachability</p>
+        <div class="status-line"><span id="bucket-pill" class="pill pill-neutral">Not checked</span><span id="bucket-region">Region: —</span></div>
+        <div class="divider"></div>
+        <div class="meta-line"><span>Public access block</span><strong id="pab-status">Not checked</strong></div>
+      </article>
+      <article class="card">
+        <div class="card-heading"><span>LAST MQTT STATUS</span><span class="icon-chip">⌁</span></div>
+        <h3 id="mqtt-message">No message observed</h3>
+        <p class="muted">Topic: <code id="mqtt-topic">security/alert</code></p>
+        <div class="divider"></div>
+        <div class="meta-line"><span>ESP32 device</span><strong class="warning-text">Not connected</strong></div>
+        <p class="tiny muted">ESP32 hardware is optional and not needed to run this dashboard.</p>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="card">
+        <div class="section-title"><div><p class="eyebrow">AWS RESOURCES</p><h3>Service status</h3></div><span class="tiny muted">Live configuration checks where available</span></div>
+        <div id="services-list" class="services-list"><p class="muted">Checking AWS configuration…</p></div>
+      </article>
+      <article class="card">
+        <div class="section-title"><div><p class="eyebrow">SECURITY EVALUATION</p><h3>Check details</h3></div></div>
+        <div class="check-detail">
+          <span class="detail-label">Configured Lambda</span><strong id="lambda-name">Not configured</strong>
+        </div>
+        <div class="check-detail">
+          <span class="detail-label">Condition checked</span><strong id="condition-detail">Not checked</strong>
+        </div>
+        <div class="check-detail">
+          <span class="detail-label">Lambda result message</span><p id="result-detail" class="muted">No result returned yet.</p>
+        </div>
+        <div class="note-box">Only the condition implemented in your Lambda is evaluated. Public access block is shown as separate bucket information and is not assumed to be the Lambda's check.</div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="card">
+        <div class="section-title"><div><p class="eyebrow">NOTIFICATIONS</p><h3>Recent alerts</h3></div><span class="tiny muted">Observed by this dashboard</span></div>
+        <div id="alerts-list" class="alerts-list"><p class="muted">No security alerts detected.</p></div>
+      </article>
+      <article class="card">
+        <div class="section-title"><div><p class="eyebrow">IOT COMMUNICATION</p><h3>IoT Core / MQTT</h3></div></div>
+        <div class="iot-grid">
+          <div class="iot-box"><span class="detail-label">MQTT topic</span><strong id="iot-topic">security/alert</strong></div>
+          <div class="iot-box"><span class="detail-label">Publishing</span><strong id="iot-publish-mode">Disabled</strong></div>
+          <div class="iot-box"><span class="detail-label">Last observed status</span><strong id="iot-last-status">None</strong></div>
+          <div class="iot-box"><span class="detail-label">Device</span><strong class="warning-text">ESP32 not connected</strong></div>
+        </div>
+        <p id="iot-publish-detail" class="muted tiny">Dashboard publishing is disabled by default to avoid duplicate MQTT messages if Lambda already publishes.</p>
+      </article>
+    </section>
+
+    <section class="card activity-card">
+      <div class="section-title"><div><p class="eyebrow">AUDIT TRAIL</p><h3>Activity history</h3></div><span class="tiny muted">Local history of dashboard-observed events (latest 30)</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Event</th><th>Status</th><th>Source</th><th>Details</th></tr></thead>
+          <tbody id="events-table"><tr><td colspan="5" class="muted">No dashboard events recorded yet.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="tiny muted footer-note">This event list is stored locally in dashboard_state.json. It is not a complete AWS-wide audit log. Use CloudWatch Logs or DynamoDB if durable, shared event history is needed.</p>
+    </section>
+
+    <footer>
+      <span>Cloud Security Monitor · Student project dashboard</span>
+      <span>Last dashboard refresh: <strong id="last-updated">—</strong></span>
+    </footer>
+  </main>
+</body>
+</html>
